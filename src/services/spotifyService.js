@@ -60,7 +60,7 @@ const getRecommendations = async (seedArtists, seedGenres, numberOfSongs) => {
         });
         return response.data.tracks;
     } catch (error) {
-        console.error('Error fetching recommendations:', error);
+        //console.error('Error fetching recommendations:', error);
         throw new Error('Failed to fetch song recommendations.');
     }
 };

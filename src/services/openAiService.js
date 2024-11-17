@@ -1,27 +1,28 @@
-const { Configuration, OpenAIApi } = require('openai');
+const { OpenAI } = require('openai');
 require('dotenv').config();
 
-const openAiClient = new OpenAIApi(
-    new Configuration({
+const openAiClient = new OpenAI(
+    {
         apiKey: process.env.OPENAI_API_KEY,
-    })
+    }
 );
 
 const getGenresByMoodAndActivity = async (mood, activity) => {
     try {
-        const response = await openAiClient.createChatCompletion({
+        const openAiResponse = await openAiClient.chat.completions.create({
             model: 'gpt-3.5-turbo',
             messages: [
                 { role: 'system', content: 'You are a helpful assistant.' },
                 {
-                    role: 'user',
-                    content: `Suggest music genres or styles that match the mood '${mood}' and the activity '${activity}'. Return the response as an array of strings without explanations, in English.`,
-                },
+                    role: 'user', content: `Sugiere géneros o estilos musicales que combinen con el estado de ánimo '${mood}' y la actividad '${activity}'.Devuelve la respuesta en un array de strings sin explicaciones adicionales y en inglés.
+            Ejemplo: ["rock", "jazz", "lo-fi"]` }
             ],
             max_tokens: 20,
         });
+        console.log(openAiResponse.choices[0].message.content);
 
-        return JSON.parse(response.data.choices[0].message.content);
+
+        return JSON.parse(openAiResponse.choices[0].message.content);
     } catch (error) {
         console.error('Error fetching genres from OpenAI:', error);
         throw new Error('Failed to fetch genres.');
