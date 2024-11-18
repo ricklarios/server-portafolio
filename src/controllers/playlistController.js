@@ -5,6 +5,8 @@ const handleCreatePlaylist = async (req, res) => {
 
     try {
         const playlist = await createPlaylist(mood, activity, numberOfSongs);
+        console.log(playlist);
+
         res.json(playlist);
     } catch (error) {
         console.error(error.message);
