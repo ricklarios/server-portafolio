@@ -1,9 +1,13 @@
 const express = require('express');
+const cors = require('cors');
 const playlistRoutes = require('./routes/playlistRoutes');
 const errorMiddleware = require('./middlewares/errorMiddleware');
 
 const app = express();
-console.log("### APP ###");
+// Configure Cors
+app.use(cors({
+    origin: process.env.UI_URL,
+}));
 
 
 app.use(express.json());
