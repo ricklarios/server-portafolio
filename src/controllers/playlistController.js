@@ -19,9 +19,10 @@ const handleCreatePlaylist = async (req, res) => {
  * @param {Object} res - Objeto de respuesta HTTP.
  */
 const generateLink = async (req, res) => {
-    const { trackUris, userAccessToken } = req.body;
-    console.log("trackUris", trackUris);
-    console.log("userAccessToken", userAccessToken);
+    const { trackUris, userAccessToken, playlistName } = req.body;
+    /* console.log("trackUris", trackUris);
+    console.log("userAccessToken", userAccessToken); */
+    console.log("playlistName", playlistName);
 
     if (!trackUris || trackUris.length === 0) {
         return res.status(400).json({ error: 'No tracks provided.' });
@@ -36,7 +37,7 @@ const generateLink = async (req, res) => {
         const createPlaylistResponse = await axios.post(
             'https://api.spotify.com/v1/me/playlists',
             {
-                name: 'Your Custom Playlist',
+                name: playlistName,
                 description: 'Generated with your favorite artists and mood!',
                 public: false,
             },
