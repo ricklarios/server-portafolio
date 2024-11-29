@@ -46,23 +46,52 @@ const getAllFollowedArtists = async () => {
     }
 };
 
-const getRecommendations = async (seedArtists, seedGenres, numberOfSongs) => {
+const getRecommendations = async (seedArtists, seedGenres, numberOfSongs = 12) => {
     const token = await getAccessToken();
+    console.log("numberOfSongs", numberOfSongs);
 
-    try {
-        const response = await axios.get('https://api.spotify.com/v1/recommendations', {
-            headers: { Authorization: `Bearer ${token}` },
-            params: {
-                seed_artists: seedArtists,
-                seed_genres: seedGenres,
-                limit: numberOfSongs,
-            },
-        });
-        return response.data.tracks;
-    } catch (error) {
-        console.error('Error fetching recommendations:', error);
-        throw new Error('Failed to fetch song recommendations.');
+    let filteredArtists = seedArtists.filter(artist =>
+        artist.genres.some(genre => seedGenres.includes(genre))
+    );
+    console.log("filteredArtists", filteredArtists.length);
+
+    if (filteredArtists.length === 0) {
+        throw new Error('No artists found with the specified genres.');
     }
+    if (filteredArtists.length >= numberOfSongs * 2) {
+        filteredArtists = filteredArtists.slice(0, numberOfSongs * 2).map(artist => artist.id);
+        console.log("filteredArtists", filteredArtists.length);
+    }
+    const songsPerArtist = Math.ceil((2 * numberOfSongs) / filteredArtists.length);
+    console.log("filteredArtists", filteredArtists);
+
+    let candidateSongs = [];
+
+    for (const artist of filteredArtists) {
+        try {
+            const response = await axios.get(
+                `https://api.spotify.com/v1/artists/${artist}/top-tracks`,
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+
+            const topTracks = response.data.tracks.slice(0, songsPerArtist);
+            candidateSongs = candidateSongs.concat(topTracks);
+        } catch (error) {
+            console.error(`Error fetching top tracks for artist ${artist.id}:`, error);
+            throw new Error('Error fetching top tracks.');
+        }
+    }
+
+    if (candidateSongs.length < numberOfSongs) {
+        throw new Error('Not enough candidate songs to meet the requested number.');
+    }
+
+    const shuffledSongs = candidateSongs.sort(() => 0.5 - Math.random());
+    const selectedSongs = shuffledSongs.slice(0, numberOfSongs);
+
+    return selectedSongs;
 };
 
 module.exports = {
