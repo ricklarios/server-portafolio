@@ -24,29 +24,31 @@ const getAccessToken = async () => {
     }
 };
 
+let allArtists = [];
 const getAllFollowedArtists = async () => {
     const token = await getAccessToken();
-    let allArtists = [];
     let nextUrl = 'https://api.spotify.com/v1/me/following?type=artist&limit=50';
 
-    try {
-        while (nextUrl) {
-            const response = await axios.get(nextUrl, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+    if (allArtists.length === 0) {
+        try {
+            while (nextUrl) {
+                const response = await axios.get(nextUrl, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
 
-            const { artists } = response.data;
-            allArtists = allArtists.concat(artists.items);
-            nextUrl = artists.next;
+                const { artists } = response.data;
+                allArtists = allArtists.concat(artists.items);
+                nextUrl = artists.next;
+            }
+        } catch (error) {
+            console.error('Error fetching followed artists:', error);
+            throw new Error('Failed to fetch followed artists.');
         }
-        return allArtists;
-    } catch (error) {
-        console.error('Error fetching followed artists:', error);
-        throw new Error('Failed to fetch followed artists.');
     }
+    return allArtists;
 };
 
-const getRecommendations = async (seedArtists, seedGenres, numberOfSongs = 12) => {
+const getRecommendations = async (seedArtists, seedGenres, numberOfSongs = 15) => {
     const token = await getAccessToken();
     console.log("numberOfSongs", numberOfSongs);
 
@@ -59,7 +61,7 @@ const getRecommendations = async (seedArtists, seedGenres, numberOfSongs = 12) =
         throw new Error('No artists found with the specified genres.');
     }
     if (filteredArtists.length >= numberOfSongs * 2) {
-        filteredArtists = filteredArtists.slice(0, numberOfSongs * 2).map(artist => artist.id);
+        filteredArtists = filteredArtists.sort(() => 0.5 - Math.random()).slice(0, numberOfSongs * 2).map(artist => artist.id);
         console.log("filteredArtists", filteredArtists.length);
     }
     const songsPerArtist = Math.ceil((2 * numberOfSongs) / filteredArtists.length);
